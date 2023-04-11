@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="burptest:jar">
+    <output-path>$PROJECT_DIR$/burpTools/burptest/out</output-path>
+    <root id="archive" name="burptest.jar">
+      <element id="module-output" name="burptest" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/net/portswigger/burp/extender/burp-extender-api/1.7.22/burp-extender-api-1.7.22.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

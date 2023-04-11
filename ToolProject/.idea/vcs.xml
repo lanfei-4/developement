@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$/burpTools/SpringScan" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/burpTools/log4j2burpscanner" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/burpTools/passive-scan-client" vcs="Git" />
+  </component>
+</project>

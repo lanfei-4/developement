@@ -1,0 +1,6 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="SSRF-SCAN:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/SSRF_SCAN_jar</output-path>
+    <root id="archive" name="SSRF-SCAN.jar" />
+  </artifact>
+</component>
