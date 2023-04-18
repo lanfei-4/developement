@@ -250,6 +250,11 @@ public class configGuI {
         return this.apiField.getText().trim();
     }
 
+    //获取选择的dnslog平台
+    public Backends getBackend(){
+        return Backends.valueOf(this.backendSelector.getSelectedItem().toString());
+    }
+
     //获取apitoken值
     public String getTokenvalue(){
         return this.tokenField.getText().trim();

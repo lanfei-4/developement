@@ -1,6 +1,8 @@
 import burp.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import dnslogPlatForm.IBackend;
+import dnslogPlatForm.dnslog;
 
 import java.io.PrintWriter;
 import java.net.URL;
@@ -21,6 +23,7 @@ public class BurpExtender implements IBurpExtender,IScannerCheck{
     private PrintWriter stderr;
     private Tags tags;
 
+    private IBackend backend;
     //
     // implement IBurpExtender
     // 实现IBurpExtender接口
@@ -35,7 +38,7 @@ public class BurpExtender implements IBurpExtender,IScannerCheck{
         this.callbacks = callbacks;
 
         // obtain an extension helpers object  获取helpers对象
-        this.helpers = callbacks.getHelpers();
+        this.helpers = this.callbacks.getHelpers();
 
 
         // set our extension name 设置插件名称
@@ -44,10 +47,12 @@ public class BurpExtender implements IBurpExtender,IScannerCheck{
         this.stdout = new PrintWriter(this.callbacks.getStdout(), true);
         this.stderr = new PrintWriter(this.callbacks.getStderr(), true);
 
-        callbacks.registerScannerCheck(this);
+        //注册scannerr
+        this.callbacks.registerScannerCheck(this);
 
-        // 添加tab
-        this.tags = new Tags(callbacks,"xxeScanner");
+        // 添加tag到ui
+        this.tags = new Tags(this.callbacks,"xxeScanner");
+
 
     }
 
@@ -63,9 +68,15 @@ public class BurpExtender implements IBurpExtender,IScannerCheck{
 
     public List<IScanIssue> checkVul(IHttpRequestResponse httpRequestResponse,List<IScanIssue> issues){
 //        stdout.println("xzczxczx");
-        BurpCollaboratorClient burpCollaboratorClient = new BurpCollaboratorClient();
-        String dnsName = burpCollaboratorClient.getDomain(this.callbacks);
-        String payload = "http://" + dnsName;
+
+        initBackend();
+        this.stdout.println("666661");
+        this.stdout.println(this.backend);
+        String dnsName = this.backend.generatePayload();
+
+        this.stdout.println("77771");
+        this.stdout.println("88888"+dnsName);
+        String payload = "http://" + dnsName.trim();
         IHttpService httpService = httpRequestResponse.getHttpService();
         IBurpCollaboratorClientContext dnslog = callbacks.createBurpCollaboratorClientContext();
         //获取请求信息
@@ -139,7 +150,7 @@ public class BurpExtender implements IBurpExtender,IScannerCheck{
             }
             stdout.println(newBody+"！！！！！！！！1");
         }
-        //构造新header
+        //构造新headerx
         request_header.set(0,firstheaders[0]+" "+firstheaders[1]+" "+firstheaders[2]);
         //创建新的请求数据包
         byte[] newRequest = this.helpers.buildHttpMessage(request_header,newBody.getBytes());
@@ -147,7 +158,7 @@ public class BurpExtender implements IBurpExtender,IScannerCheck{
         IHttpRequestResponse iHttpRequestResponseNew = callbacks.makeHttpRequest(httpService,newRequest);
         int status =  this.helpers.analyzeResponse(iHttpRequestResponseNew.getResponse()).getStatusCode();
         stdout.println("函数主题");
-        if(burpCollaboratorClient.checkResult(dnsName)){
+        if(this.backend.checkResult()){
             stdout.println("进入漏洞检测成功");
             String issue = "SSRF Vul";
             //设置Dashboard扫描Issue显示
@@ -248,6 +259,7 @@ public class BurpExtender implements IBurpExtender,IScannerCheck{
         if(!this.tags.getConfigGuI().isEnable()){return null;}
 
         List<IScanIssue> issues = new ArrayList<IScanIssue>();
+
         this.checkVul(iHttpRequestResponse,issues);
         if(issues.size()>0){
             return issues;
@@ -266,6 +278,26 @@ public class BurpExtender implements IBurpExtender,IScannerCheck{
     @Override
     public int consolidateDuplicateIssues(IScanIssue iScanIssue, IScanIssue iScanIssue1) {
         return 0;
+    }
+
+
+
+    private void initBackend(){
+        configGuI.Backends backend = this.tags.getConfigGuI().getBackend();
+        switch (backend){
+            case Dnslog:
+                this.backend = new dnslog(callbacks);
+
+            case BurpCollaborate:
+                this.backend = new BurpCollaboratorClient(callbacks);
+
+        }
+        this.stdout.println("in backend");
+        this.stdout.println(this.tags.getConfigGuI().getBackend());
+        if(this.backend == null){
+            stdout.println("请选择平台");
+        }
+
     }
 
     //基于IscanIssue实现一个类用于存储漏洞的详细信息
